@@ -1,0 +1,26 @@
+steps:
+  # Step 1: Build the Docker image with proper tags
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build', 
+      '--tag=us-central1-docker.pkg.dev/muneera-493516/cicd-demo/cicd-image:$BUILD_ID', 
+      '--tag=us-central1-docker.pkg.dev/muneera-493516/cicd-demo/cicd-image:latest', 
+      '.'
+    ]
+ 
+  # Step 2: Push both tags to Artifact Registry
+  #- name: 'gcr.io/cloud-builders/docker'
+  #  args: ['push', 'us-central1-docker.pkg.dev/muneera-493516/cicd-demo/cicd-image:$BUILD_ID']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/muneera-493516/cicd-demo/cicd-image:latest']
+ 
+  # Step 3: Update your VM instance to run the container
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args: [
+      'compute', 'instances', 'update-container', 'cicd-vm',
+      '--zone=us-central1-a',
+      '--container-image=us-central1-docker.pkg.dev/muneera-493516/cicd-demo/cicd-image:latest'
+    ]
+options:
+  logging: CLOUD_LOGGING_ONLY
